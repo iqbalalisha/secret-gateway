@@ -7,39 +7,57 @@ const path = require('path');
 
 // Basic Authentication middleware
 const basicAuth = (req, res, next) => {
-  // Check if authorization header exists
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
+  try {
+    // Check if authorization header exists
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      res.setHeader('WWW-Authenticate', 'Basic');
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Get credentials from header
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+    const [username, password] = credentials.split(':');
+
+    // Check if credentials match
+    if (username === process.env.USERNAME && password === process.env.PASSWORD) {
+      return next();
+    }
+
+    // If credentials don't match
     res.setHeader('WWW-Authenticate', 'Basic');
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).json({ error: 'Invalid credentials' });
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return res.status(500).json({ error: 'Server error during authentication' });
   }
-
-  // Get credentials from header
-  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  const username = auth[0];
-  const password = auth[1];
-
-  // Check if credentials match
-  if (username === process.env.USERNAME && password === process.env.PASSWORD) {
-    return next();
-  }
-
-  // If credentials don't match
-  res.setHeader('WWW-Authenticate', 'Basic');
-  return res.status(401).json({ error: 'Invalid credentials' });
 };
+
+// Middleware to parse JSON
+app.use(express.json());
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // API Routes
 app.get('/api', (req, res) => {
-  res.send('Hello Adeeb!');
+  try {
+    res.send('Hello Adeeb!');
+  } catch (error) {
+    console.error('Error in public route:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 app.get('/api/secret', basicAuth, (req, res) => {
-  res.json({ message: process.env.SECRET_MESSAGE });
+  try {
+    res.json({ message: process.env.SECRET_MESSAGE });
+  } catch (error) {
+    console.error('Error in secret route:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Handle React routing, return all requests to React app
@@ -50,4 +68,6 @@ app.get('*', function(req, res) {
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log(`Using USERNAME: ${process.env.USERNAME}`);
+  console.log(`Using PASSWORD: ${process.env.PASSWORD}`);
 });
