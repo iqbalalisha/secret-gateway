@@ -12,21 +12,32 @@ const basicAuth = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader) {
+      console.log('No authorization header provided');
       res.setHeader('WWW-Authenticate', 'Basic');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     // Get credentials from header
     const base64Credentials = authHeader.split(' ')[1];
+    console.log('Received encoded credentials:', base64Credentials);
+    
     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+    console.log('Decoded credentials:', credentials);
+    
     const [username, password] = credentials.split(':');
+    console.log('Parsed username:', username);
+    console.log('Parsed password:', password);
+    console.log('Expected username:', process.env.USERNAME);
+    console.log('Expected password:', process.env.PASSWORD);
 
     // Check if credentials match
     if (username === process.env.USERNAME && password === process.env.PASSWORD) {
+      console.log('Authentication successful');
       return next();
     }
 
     // If credentials don't match
+    console.log('Authentication failed - Invalid credentials');
     res.setHeader('WWW-Authenticate', 'Basic');
     return res.status(401).json({ error: 'Invalid credentials' });
   } catch (error) {
@@ -70,4 +81,5 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log(`Using USERNAME: ${process.env.USERNAME}`);
   console.log(`Using PASSWORD: ${process.env.PASSWORD}`);
+  console.log(`Using SECRET_MESSAGE: ${process.env.SECRET_MESSAGE}`);
 });

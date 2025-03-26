@@ -10,6 +10,7 @@ const Index = () => {
   const [password, setPassword] = useState("");
   const [secretMessage, setSecretMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchPublicRoute = async () => {
     try {
@@ -34,13 +35,18 @@ const Index = () => {
   const fetchSecretRoute = async () => {
     try {
       setLoading(true);
+      console.log("Credentials being used:", username, password);
       const credentials = btoa(`${username}:${password}`);
+      console.log("Base64 encoded credentials:", credentials);
+      
       const response = await fetch("/api/secret", {
         headers: {
           Authorization: `Basic ${credentials}`,
         },
       });
 
+      console.log("Response status:", response.status);
+      
       if (response.ok) {
         const data = await response.json();
         setSecretMessage(data.message);
@@ -49,13 +55,16 @@ const Index = () => {
           description: "Secret message retrieved successfully",
         });
       } else {
+        const errorData = await response.json();
+        console.error("Authentication error:", errorData);
         toast({
           title: "Authentication Failed",
-          description: "Invalid credentials",
+          description: `Error: ${errorData.error}`,
           variant: "destructive",
         });
       }
     } catch (error) {
+      console.error("Error in fetchSecretRoute:", error);
       toast({
         title: "Error",
         description: "Failed to fetch secret route",
@@ -104,13 +113,22 @@ const Index = () => {
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-              />
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </Button>
+              </div>
             </div>
             {secretMessage && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-md">
