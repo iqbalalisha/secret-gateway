@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // API Routes
 app.get('/api', (req, res) => {
-  res.send('Hello, world!');
+  res.send('Hello Adeeb!');
 });
 
 app.get('/api/secret', basicAuth, (req, res) => {
