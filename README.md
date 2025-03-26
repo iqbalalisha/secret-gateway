@@ -1,12 +1,13 @@
 
-# Node.js Authentication Service
+# Secret Gateway
 
-A minimal Node.js service with Basic Authentication.
+A Node.js service with Basic Authentication and a React frontend.
 
 ## Features
 
-- Public route (`/`) that returns "Hello, world!"
-- Protected route (`/secret`) that requires Basic Authentication
+- Frontend interface to interact with the API
+- Public route (`/api`) that returns "Hello, world!"
+- Protected route (`/api/secret`) that requires Basic Authentication
 - Environment variable configuration for credentials and secret message
 
 ## Getting Started
@@ -17,9 +18,14 @@ A minimal Node.js service with Basic Authentication.
    ```
    npm install
    ```
-4. Start the server:
+4. For development (with hot reloading):
    ```
-   node src/server.js
+   npm run dev
+   ```
+5. For production:
+   ```
+   npm run build
+   npm start
    ```
 
 ## Environment Variables
@@ -35,13 +41,22 @@ Configure the following environment variables in your `.env` file:
 
 ### Public Route
 ```
-GET /
+GET /api
 ```
 Returns "Hello, world!"
 
 ### Protected Route
 ```
-GET /secret
+GET /api/secret
 ```
 Requires Basic Authentication with the credentials specified in your `.env` file.
 Returns the secret message specified in your `.env` file.
+
+## Frontend
+
+The frontend is a React application that provides a user interface for interacting with the API endpoints. It includes:
+
+- A public route button that fetches from the `/api` endpoint
+- A form for entering username and password to access the protected `/api/secret` endpoint
+- Display of the secret message when authenticated successfully
+

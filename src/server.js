@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
+const path = require('path');
 
 // Basic Authentication middleware
 const basicAuth = (req, res, next) => {
@@ -29,13 +30,21 @@ const basicAuth = (req, res, next) => {
   return res.status(401).json({ error: 'Invalid credentials' });
 };
 
-// Routes
-app.get('/', (req, res) => {
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// API Routes
+app.get('/api', (req, res) => {
   res.send('Hello, world!');
 });
 
-app.get('/secret', basicAuth, (req, res) => {
+app.get('/api/secret', basicAuth, (req, res) => {
   res.json({ message: process.env.SECRET_MESSAGE });
+});
+
+// Handle React routing, return all requests to React app
+app.get('*', function(req, res) {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Start server
